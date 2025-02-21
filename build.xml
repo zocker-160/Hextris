@@ -1,0 +1,90 @@
+<project name="Hextris" default="default" basedir=".">
+
+<!-- set global properties for this build -->
+<property name="proj" value="hextris"/>
+<property name="main" value="Hextris"/>
+<property name="srcDir" value="src"/>
+<property name="buildDir" value="classes"/>
+<property name="distDir" value="."/>
+<property name="tempDir" value="temp"/>
+<property name="javadocDir" value="javadoc"/>
+<property name="jversion" value="1.5"/>
+<property name="projectDir" value="hextris"/>
+<property name="classPath" value="net.hextris"/>
+<property name="version" value="0.9.7"/>
+
+<!-- Initialize -->
+<target name="init" description="Initialize the build process.">
+    <!-- Create a time stamp -->
+    <tstamp/>
+</target>
+
+<!-- Compile source files to class files -->
+<target name="compile" depends="init" description="Compile the program.">
+    <mkdir dir="${buildDir}"/>
+    <javac srcDir="${srcDir}" destDir="${buildDir}" encoding="ISO-8859-1" 
+        debug="on" source="${jversion}" target="${jversion}" />
+</target>
+
+<!-- Build jar from classes -->
+<target name="build" depends="compile" description="Build a jar file.">
+    <jar jarfile="${distDir}/${proj}.jar">
+        <manifest>
+            <attribute name="Main-Class" value="${classPath}.${main}"/>
+        </manifest>
+		<zipfileset dir="classes/net" prefix="net" />
+		<zipfileset dir="src/net/hextris" prefix="net/hextris" includes="hextris_icon.gif"/>			
+		<zipfileset dir="src/net/hextris" prefix="net/hextris" includes="hextris.properties"/>			
+    </jar>
+</target>
+
+<!-- Run the program -->
+<target name="run" depends="build" description="Run the program.">
+    <java jar="${distDir}/${proj}.jar" fork="true">
+        <!--jvmarg value="-Xdock:name=${proj}"/-->
+    </java>
+</target>
+
+<!-- Clean up all build/dist/temp directories -->
+<target name="clean" description="Clean the project.">
+    <delete dir="${buildDir}"/>
+    <delete dir="${javadocDir}"/>
+</target>
+
+<!-- Generate javadoc HTML documentation -->
+<target name="doc" depends="clean,compile" description="Generate the javadoc.">
+    <mkdir dir="${javadocDir}"/>
+    <mkdir dir="${tempDir}"/>
+    <copy todir="${tempDir}">
+        <fileset dir="${srcDir}" includes="**/*.java, **/*.html"/>
+    </copy>
+    <javadoc
+		Encoding="ISO-8859-1"
+        sourcepath="${tempDir}"
+        classpath="${buildDir}"
+        destdir="${javadocDir}"
+        author="true" version="true"
+        access="protected" use="true"
+        overview="${basedir}/overview.html"
+        windowtitle="${proj} v${version} API">
+        <fileset dir="${tempDir}">
+            <include name="**/*.java"/>
+        </fileset>
+        <doctitle>
+            <![CDATA[<h2>${proj} v${version} API</h2>]]>
+        </doctitle>
+        <header>
+            <![CDATA[<a href="http://sourceforge.net" target="_top"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=226326&amp;type=3" width="125" height="37" border="0" alt="SourceForge.net Logo"></a>]]>
+        </header>
+        <bottom>
+            <![CDATA[<i>Distributed under the terms of the <a href="http://www.gnu.org/copyleft/gpl.html" target="_top">GPL</a></i>]]>
+        </bottom>
+    </javadoc>
+    <delete dir="${tempDir}"/>
+</target>
+
+<!-- Default target -->
+<target name="default" depends="clean, build" description="Default clean and build.">
+</target>
+
+</project>
