@@ -1,2 +1,6 @@
 .directory
+.idea
+target/
+
 *.jar
+*.iml
