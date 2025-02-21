@@ -118,7 +118,7 @@ public class MainFrame extends JFrame
 		//this.hextris.highScores.read();
 		this.hextris.setBackground(java.awt.Color.lightGray);
 
-		this.setIconImage(Toolkit.getDefaultToolkit().createImage(this.getClass().getResource("/net/hextris/hextris_icon.gif")));		
+		this.setIconImage(Toolkit.getDefaultToolkit().createImage(this.getClass().getResource("hextris_icon.gif")));
 		
 		this.pack();
 		this.setLocationRelativeTo(null);

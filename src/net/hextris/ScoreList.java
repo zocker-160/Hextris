@@ -1,16 +1,12 @@
 package net.hextris;
 
-import java.io.BufferedReader;
+import lombok.Getter;
+
+import java.io.*;
 //import java.io.BufferedWriter;
 //import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -22,31 +18,29 @@ import java.util.StringTokenizer;
  * @author fränk
  * 
  */
-public class ScoreList 
-{
-	private static final long serialVersionUID = 1481294261049397840L;
-	private static int maxSize = 100;
+public class ScoreList {
+
+	@Getter
+	private static int maxSize = 500;
+
 	private static URL baseURL;
 	private static ArrayList<Score> scoreList = null;//new ScoreList();
-	
 
-	/**
-	 * returns the scorelist
-	 * if necessary ceates and initializes a new scorelist
-	 * @return
-	 */
-	public static ArrayList<Score> getScoreList()
-	{
-		if (scoreList==null) {
-			scoreList=new ArrayList<Score>(maxSize);
+
+	public static ArrayList<Score> getScoreList() {
+		if (scoreList == null) {
+
+			scoreList = new ArrayList<>(maxSize);
 			Properties prop = new Properties();
-			try {
-	            InputStream inS = ScoreList.class.getClassLoader().getResourceAsStream("net/hextris/hextris.properties");
-	            if (inS!=null) prop.load(inS);
-	            setBaseURL(new URL(prop.getProperty("hextris.ServerScriptUrl","")));
+
+
+			try (InputStream inS = ScoreList.class.getResourceAsStream("hextris.properties")) {
+				prop.load(inS);
+				String url = prop.getProperty("hextris.ServerScriptUrl");
+
+				baseURL = URI.create(url).toURL();
 	            read();
-	        } catch (MalformedURLException e) {
-	            e.printStackTrace();
+
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
@@ -80,8 +74,8 @@ public class ScoreList
 		OutputStreamWriter wr = null;
 		try {
 	        // post data
-	        String data = URLEncoder.encode("name", "ISO-8859-1") + "=" + URLEncoder.encode(s.getName(), "ISO-8859-1");
-	        data += "&" + URLEncoder.encode("score", "ISO-8859-1") + "=" + URLEncoder.encode(new Integer(s.getScore()).toString(), "ISO-8859-1");
+	        String data = URLEncoder.encode("name", "ISO-8859-1") + "=" + URLEncoder.encode(s.name(), "ISO-8859-1");
+	        data += "&" + URLEncoder.encode("score", "ISO-8859-1") + "=" + URLEncoder.encode(new Integer(s.score()).toString(), "ISO-8859-1");
 	        // post senden
 	        HttpURLConnection conn = (HttpURLConnection)getBaseURL().openConnection();
 	        conn.setDoOutput(true);
@@ -89,37 +83,30 @@ public class ScoreList
 	        wr.write(data);
 	        wr.flush();
 	        wr.close();
-			read(conn);
+
+			read();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * reads the scorelist from from the server
-	 * 
-	 * @param conn use this connection
-	 */
-	public static boolean read(HttpURLConnection conn) 
-	{
+	public static boolean read() {
 		ArrayList<Score> scoreList = ScoreList.getScoreList();
 		scoreList.clear();
-		try {
-			InputStream is = null;
-			if (conn==null) is = baseURL.openStream();
-			else is = conn.getInputStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(is,"ISO-8859-1"));
-			String line = "";
-			int count=0;
-			while ((line = br.readLine()) != null && ++count<=maxSize) {
-				if (line.trim().length()==0) continue;
-				StringTokenizer tok = new StringTokenizer(line, ";");
-				int score = Integer.valueOf(tok.nextToken());
-				String name = tok.nextToken();
-				//System.out.println(name + " " + score);
-				scoreList.add(new Score(name, score));
+
+		int count = 0;
+
+		try (var br = new BufferedReader(new InputStreamReader(baseURL.openStream(), StandardCharsets.ISO_8859_1))) {
+			String line;
+
+			while ((line = br.readLine()) != null && ++count <= maxSize) {
+				if (line.trim().isEmpty()) continue;
+
+				String[] values = line.split(";");
+				if (values.length != 2) continue;
+
+				scoreList.add(new Score(values[1], Integer.parseInt(values[0])));
 			}
-			is.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -129,26 +116,13 @@ public class ScoreList
 	}
 
 	/**
-	 * reads scorelist from the server
-	 * @return
-	 */
-	public static boolean read() 
-	{
-		return read(null);
-	}
-
-	public static int getMaxSize() {
-		return maxSize;
-	}
-
-	/**
 	 * returns the least score in the scorelist
 	 * @return
 	 */
 	public static int getMinScore() {
 		int s = scoreList.size();
 		if (s >= maxSize) {
-			return ((Score) scoreList.get(scoreList.size() - 1)).getScore();
+			return ((Score) scoreList.get(scoreList.size() - 1)).score();
 		} else {
 			return 0;
 		}
@@ -178,7 +152,7 @@ public class ScoreList
 	{
 		int res = scoreList.size()+1;
 		for (int i = 0; i<scoreList.size(); i++) {
-			if (score>scoreList.get(i).getScore()) 
+			if (score>scoreList.get(i).score())
 			{
 				res = i+1;
 				break;

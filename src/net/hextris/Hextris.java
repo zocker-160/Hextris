@@ -350,7 +350,7 @@ public class Hextris extends JPanel implements Runnable
 					this.currentStone.moveStone(dx>0?Stone.MOVE_RIGHT:Stone.MOVE_LEFT);
 					this.playPanel.repaint();
 					try {Thread.sleep(50);} catch (InterruptedException iex) {}
-				}				
+				}
 			}
 		} else this.gameOver();
 	}	
@@ -399,7 +399,7 @@ public class Hextris extends JPanel implements Runnable
 		this.playPanel.setGameOver(true);
 		if (!gameOver && !this.demo && ScoreList.read()) {
 			int place = ScoreList.getPlace(score);
-			if (place<=ScoreList.getMaxSize()) {
+			if (place <= ScoreList.getMaxSize()) {
 				String playerName=JOptionPane.showInputDialog("You are #"+place+" in the highscore list.\nPlease enter your name:","");
 				if (playerName!=null && playerName.trim().length()>0) {
 					ScoreList.upload(new Score(playerName.trim().substring(0, Math.min(20, playerName.trim().length())),score));
@@ -509,7 +509,10 @@ public class Hextris extends JPanel implements Runnable
 		
 		//read highscores from server and write into jta
 		if (ScoreList.read()) {
+			//ScoreList.upload(new Score("zocker_160", 69420));
+
 			ArrayList<Score> scoreList = ScoreList.getScoreList();
+
 			for (int i = 0; i<scoreList.size(); i++) {
 				String pos = new Integer(i+1).toString();
 				jta.append(pos + "." + "   ".substring(pos.length()) + scoreList.get(i).toString() + "\n");
